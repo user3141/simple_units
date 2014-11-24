@@ -30,8 +30,7 @@ class Quantity(object):
         self.coeff = None
         self.unit = None
         self.base_class = physical_entity_class
-        self.base_unit  = physical_entity_class.base_unit
-
+        self.base_unit = physical_entity_class.base_unit
 
     def __mul__(self, other):
         # number or other Quantity
@@ -57,17 +56,38 @@ class Quantity(object):
 
     def __add__(self, other):
         # number or other Quantity
-        if self.base_class == other.base_class:
-            pass
+        if self.base_class != other.base_class:
+            raise Exception('You cannot adid different physical entities, i.e. time + mass = ?')
+            print self.base_class, other.base_class
 
-    def __equal__(self, other):
-        # number or other Quantity
-        pass
+        result = Quantity(self.base_class)
+        result.base_unit = self.base_unit
+        # do the math in base units
+        result.value = self.value * self.coeff + other.value * other.coeff
+        # keep unit of self
+        result.unit = self.unit
+        result.value = result.value / self.coeff
+        result.coeff = self.coeff
+        return result
+
+    def __eq__(self, other):
+        if self.base_unit != other.base_unit:
+            print self.base_unit, other.base_unit
+            raise Exception('You cannot compare different physical entities, i.e. time == mass')
+        return self.value * self.coeff == other.value * other.coeff
+
+    def __ne__(self, other):
+        if self.base_unit != other.base_unit:
+            print self.base_unit, other.base_unit
+            raise Exception('You cannot compare different physical entities, i.e. time == mass')
+        return self.value * self.coeff != other.value * other.coeff
 
     def __str__(self):
         return ' '.join([str(self.value), str(self.unit)])
 
+### Unit definitions
 
+# length
 meter = Quantity(Length)
 meter.coeff = 1
 meter.unit = 'meter'
@@ -76,19 +96,21 @@ kilometer = Quantity(Length)
 kilometer.coeff = 1000
 kilometer.unit = 'kilometer'
 
-##############################################################
+# mass
+gram = Quantity(Mass)
+gram.coeff = 0.001
+gram.unit = 'gram'
 
-print meter.value
-print meter.unit
-print meter.base_unit
+kilogram = Quantity(Mass)
+kilogram.coeff = 1
+kilogram.unit = 'kilogram'
 
-length = 3 * meter
-height = 5 * meter
-print length.value, length.coeff, length.unit, length.base_unit, length.base_class
-print length
-area = length * height # m^2 not meter
-print area
-print area.value, area.unit
+# time
+second = Quantity(Time)
+second.coeff = 1
+second.unit = 'second'
 
-dist = 0.003 * kilometer
-print dist * height
+minute = Quantity(Time)
+minute.coeff = 60
+minute.unit = 'minute'
+
