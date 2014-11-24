@@ -1,8 +1,4 @@
-# assert(5*meters == 0.005*kilometers)
-# assert((60*seconds).to(minutes).value==1)
-# assert((60*seconds).to(minutes).unit==minutes)
-# with assert_raises(IncompatibleUnitsError):
-#         5*meters+2*seconds
+from __future__ import division
 
 ### physical entities
 class Length(object):
@@ -41,12 +37,16 @@ class Quantity(object):
 
         try:  # multiply with number
             float(other)
-            result.value =  self.value * other
-        except TypeError:  # multiply with other Quantity
-            # TODO units
-            result.value = self.value * other.value * other.coeff
+            result.value = self.value * other
+        except TypeError:
+            # TODO different units
+            if self.base_class != other.base_class:
+                print self.base_class, other.base_class
+                raise Exception('Multiplication of different physical entities is not yet implemented.')
+            # multiply in base units
+            result.value = (self.value * self.coeff) * (other.value * other.coeff)
 
-        result.coeff = 1
+        result.coeff = self.coeff
         result.unit = self.unit
         result.base_unit = self.base_unit
         return result
@@ -57,8 +57,8 @@ class Quantity(object):
     def __add__(self, other):
         # number or other Quantity
         if self.base_class != other.base_class:
-            raise Exception('You cannot adid different physical entities, i.e. time + mass = ?')
             print self.base_class, other.base_class
+            raise Exception('You cannot add different physical entities, i.e. time + mass = ?')
 
         result = Quantity(self.base_class)
         result.base_unit = self.base_unit
@@ -72,18 +72,23 @@ class Quantity(object):
 
     def __eq__(self, other):
         if self.base_unit != other.base_unit:
-            print self.base_unit, other.base_unit
-            raise Exception('You cannot compare different physical entities, i.e. time == mass')
+            raise Exception('Cannot compare different physical entities: ' + ' '.join([self.base_unit, other.base_unit]))
         return self.value * self.coeff == other.value * other.coeff
 
     def __ne__(self, other):
         if self.base_unit != other.base_unit:
-            print self.base_unit, other.base_unit
-            raise Exception('You cannot compare different physical entities, i.e. time == mass')
+            raise Exception('Cannot compare different physical entities: ' + ' '.join([self.base_unit, other.base_unit]))
         return self.value * self.coeff != other.value * other.coeff
 
     def __str__(self):
         return ' '.join([str(self.value), str(self.unit)])
+
+    def to(self, other):
+        if self.base_class != other.base_class:
+            raise Exception('Cannot convert between different physical entities.')
+        self.unit = other.unit
+        self.value = self.value * self.coeff / other.coeff
+        self.coeff = other.coeff
 
 ### Unit definitions
 
