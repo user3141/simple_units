@@ -4,20 +4,40 @@
 # with assert_raises(IncompatibleUnitsError):
 #         5*meters+2*seconds
 
-import simple_units.unit_lib as ul
+#import ..simple_units.unit_lib as ul
+from .. import unit_lib as ul
 from nose.tools import assert_equal, assert_almost_equal, assert_raises
 
 
 def test_initialisation():
     length = 5 * ul.meter
     assert_equal(length.value, 5)
-    assert_equal(length.unit, 'meter')
-    assert_equal(length.base_unit, 'meter')
+    assert_equal(length.unit, {'meter': 1})
+    assert_equal(length.base_unit, {'meter': 1})
 
     length = 12.4 * ul.kilometer
     assert_equal(length.value, 12.4)
-    assert_equal(length.unit, 'kilometer')
-    assert_equal(length.base_unit, 'meter')
+    assert_equal(length.unit, {'kilometer': 1})
+    assert_equal(length.base_unit, {'meter': 1})
+
+
+def test_multiplication():
+    length = 3 * ul.meter
+    height = 2 * ul.meter
+    assert_equal(length * height, height * length)
+    area = length * height
+    assert_equal(area.value, 6)
+    assert_equal(area.unit, {'meter': 2})
+    assert_equal(area.base_unit, {'meter': 2})
+
+    length = 3 * ul.kilometer
+    height = 2 * ul.kilometer
+    assert_equal(length * height, height * length)
+    area = length * height
+    assert_equal(area.value, 6)
+    assert_equal(area.unit, {'kilometer': 2})
+    assert_equal(area.base_unit, {'meter': 2})
+
 
 def test_addition():
     a = 5.3 * ul.meter
@@ -30,9 +50,13 @@ def test_addition():
         c = a + 5
     assert_raises(ul.meter + ul.meter)
 
+
 def test_print():
     length = 12.4 * ul.kilometer
     assert_equal(str(length), '12.4 kilometer')
+    height = 2 * ul.kilometer
+    area = length * height
+    assert_equal(str(area), '24.8 kilometer^2')
 
 
 def test_comparison():
@@ -60,6 +84,7 @@ def test_conversion():
     assert_almost_equal(large_dist.value, 4500)
 
     assert_raises(lambda: large_dist.to(ul.second))
+
 
 def test_division():
     length = 3 * ul.meter

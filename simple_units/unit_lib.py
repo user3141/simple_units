@@ -5,25 +5,12 @@ class IncompatibleUnitsError(Exception):
     pass
 
 
-### physical entities
-class Length(object):
-    base_unit = 'meter'
-
-
-class Mass(object):
-    base_unit = 'kilogram'
-
-
-class Time(object):
-    base_unit = 'second'
-
-
 class Quantity(object):
     """ 5 Kilometer:
             self.value = 5
             self.coeff = 1000
-            self.unit = 'Kilometer'
-            self.base_unit = 'meter'
+            self.unit = {'Kilometer': 1}
+            self.base_unit = {'meter': 1}
     """
 
     def __init__(self, physical_entity_class):
@@ -43,17 +30,34 @@ class Quantity(object):
         try:  # multiply with number
             float(other)
             result.value = self.value * other
+            result.unit = self.unit
+            result.coeff = self.coeff
+            result.base_unit = self.base_unit
         except TypeError:
-            # TODO different units
-            if self.base_class != other.base_class:
+            if self.base_class != other.base_class:  # TODO different units
                 print self.base_class, other.base_class
-                raise IncompatibleUnitsError('Multiplication of different physical entities is not yet implemented.')
-            # multiply in base units
-            result.value = (self.value * self.coeff) * (other.value * other.coeff)
+                raise NotImplementedError('Multiplication of different physical entities is not yet implemented.')
+            else:
+                ### same unit
+                assert(self.coeff == other.coeff)
+                assert(self.unit == other.unit)
+                # multiply in base units
+                result.value = self.value * other.value
+                result.coeff = self.coeff
 
-        result.coeff = self.coeff
-        result.unit = self.unit
-        result.base_unit = self.base_unit
+                result.unit = {}
+                for unit, expon in other.unit.iteritems():
+                    if unit in self.unit:
+                        result.unit[unit] = self.unit[unit] + other.unit[unit]
+                    else:
+                        result.unit[unit] = other.unit[unit]
+
+                result.base_unit = {}
+                for unit, expon in other.base_unit.iteritems():
+                    if unit in self.base_unit:
+                        result.base_unit[unit] = self.base_unit[unit] + other.base_unit[unit]
+                    else:
+                        result.base_unit[unit] = other.base_unit[unit]
         return result
 
     def __rmul__(self, other):
@@ -75,6 +79,9 @@ class Quantity(object):
         result.coeff = self.coeff
         return result
 
+    def __radd__(self, other):
+        pass
+
     def __eq__(self, other):
         if self.base_unit != other.base_unit:
             raise IncompatibleUnitsError('Cannot compare different physical entities: ' + ' '.join([self.base_unit, other.base_unit]))
@@ -86,7 +93,9 @@ class Quantity(object):
         return self.value * self.coeff != other.value * other.coeff
 
     def __str__(self):
-        return ' '.join([str(self.value), str(self.unit)])
+        unit_str = ' '.join([str(unit) + '^' + str(expon) for unit, expon in self.unit.iteritems()])
+        unit_str = unit_str.replace('^1', '')
+        return ' '.join([str(self.value), unit_str])
 
     def to(self, other):
         if self.base_class != other.base_class:
@@ -98,8 +107,20 @@ class Quantity(object):
     def __div__(self, other):
         raise NotImplementedError
 
-    def __truediv__(self, other):  # due to from __future__ import division
-        raise NotImplementedError
+
+##################################################################################################
+
+### physical entities
+class Length(object):
+    base_unit = {'meter': 1}
+
+
+class Mass(object):
+    base_unit = {'kilogram': 1}
+
+
+class Time(object):
+    base_unit = {'second': 1}
 
 
 ### Unit definitions
@@ -107,27 +128,27 @@ class Quantity(object):
 # length
 meter = Quantity(Length)
 meter.coeff = 1
-meter.unit = 'meter'
+meter.unit = {'meter': 1}
 
 kilometer = Quantity(Length)
 kilometer.coeff = 1000
-kilometer.unit = 'kilometer'
+kilometer.unit = {'kilometer': 1}
 
 # mass
 gram = Quantity(Mass)
 gram.coeff = 0.001
-gram.unit = 'gram'
+gram.unit = {'gram': 1}
 
 kilogram = Quantity(Mass)
 kilogram.coeff = 1
-kilogram.unit = 'kilogram'
+kilogram.unit = {'kilogram': 1}
 
 # time
 second = Quantity(Time)
 second.coeff = 1
-second.unit = 'second'
+second.unit = {'second': 1}
 
 minute = Quantity(Time)
 minute.coeff = 60
-minute.unit = 'minute'
+minute.unit = {'minute': 1}
 
