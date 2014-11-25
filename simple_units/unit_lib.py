@@ -34,30 +34,18 @@ class Quantity(object):
             result.coeff = self.coeff
             result.base_unit = self.base_unit
         except TypeError:
-            if self.base_class != other.base_class:  # TODO different units
-                print self.base_class, other.base_class
-                raise NotImplementedError('Multiplication of different physical entities is not yet implemented.')
-            else:
-                ### same unit
-                assert(self.coeff == other.coeff)
-                assert(self.unit == other.unit)
-                # multiply in base units
-                result.value = self.value * other.value
-                result.coeff = self.coeff
+            result.value = (self.value * self.coeff) * (other.value * other.coeff) # multiply in base units
+            result.coeff = 1
 
-                result.unit = {}
-                for unit, expon in other.unit.iteritems():
-                    if unit in self.unit:
-                        result.unit[unit] = self.unit[unit] + other.unit[unit]
-                    else:
-                        result.unit[unit] = other.unit[unit]
-
-                result.base_unit = {}
-                for unit, expon in other.base_unit.iteritems():
-                    if unit in self.base_unit:
-                        result.base_unit[unit] = self.base_unit[unit] + other.base_unit[unit]
-                    else:
-                        result.base_unit[unit] = other.base_unit[unit]
+            result.base_unit = dict(self.base_unit)  # be careful with references
+            for unit, expon in other.base_unit.iteritems():
+                if unit in result.base_unit:
+                    result.base_unit[unit] += other.base_unit[unit]
+                    if result.base_unit[unit] == 0:
+                        del result.base_unit[unit]
+                else:
+                    result.base_unit[unit] = other.base_unit[unit]
+            result.unit = result.base_unit
         return result
 
     def __rmul__(self, other):
@@ -66,7 +54,6 @@ class Quantity(object):
     def __add__(self, other):
         # number or other Quantity
         if self.base_class != other.base_class:
-            print self.base_class, other.base_class
             raise IncompatibleUnitsError('You cannot add different physical entities, i.e. time + mass = ?')
 
         result = Quantity(self.base_class)

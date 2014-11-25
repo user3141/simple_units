@@ -34,10 +34,33 @@ def test_multiplication():
     height = 2 * ul.kilometer
     assert_equal(length * height, height * length)
     area = length * height
-    assert_equal(area.value, 6)
-    assert_equal(area.unit, {'kilometer': 2})
+    assert_equal(area.value, 6000000)
+    assert_equal(area.unit, {'meter': 2})
     assert_equal(area.base_unit, {'meter': 2})
 
+    length = 3 * ul.meter
+    height = 2 * ul.kilometer
+    assert_equal(length * height, height * length)
+    area = length * height
+    assert_equal(area.value, 6000)
+    assert_equal(area.unit, {'meter': 2})
+    assert_equal(area.base_unit, {'meter': 2})
+
+    length = 3 * ul.meter
+    time = 2 * ul.second
+    assert_equal(length * time, time * length)
+    area = length * time
+    assert_equal(area.value, 6)
+    assert_equal(area.unit, {'meter': 1, 'second': 1})
+    assert_equal(area.base_unit, {'meter': 1, 'second': 1})
+
+    length = 3 * ul.meter
+    time = 2 * ul.second
+    assert_equal(length * time, time * length)
+    area = length * time * length
+    assert_equal(area.value, 18)
+    assert_equal(area.unit, {'meter': 2, 'second': 1})
+    assert_equal(area.base_unit, {'meter': 2, 'second': 1})
 
 def test_addition():
     a = 5.3 * ul.meter
@@ -56,7 +79,7 @@ def test_print():
     assert_equal(str(length), '12.4 kilometer')
     height = 2 * ul.kilometer
     area = length * height
-    assert_equal(str(area), '24.8 kilometer^2')
+    assert_equal(str(area), '24800000.0 meter^2')
 
 
 def test_comparison():
