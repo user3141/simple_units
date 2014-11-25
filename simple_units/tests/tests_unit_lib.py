@@ -4,7 +4,7 @@
 # with assert_raises(IncompatibleUnitsError):
 #         5*meters+2*seconds
 
-import unit_lib as ul
+import simple_units.unit_lib as ul
 from nose.tools import assert_equal, assert_almost_equal, assert_raises
 
 
@@ -60,3 +60,9 @@ def test_conversion():
     assert_almost_equal(large_dist.value, 4500)
 
     assert_raises(lambda: large_dist.to(ul.second))
+
+def test_division():
+    length = 3 * ul.meter
+    height = 2 * ul.meter
+    with assert_raises(NotImplementedError):
+        length / height

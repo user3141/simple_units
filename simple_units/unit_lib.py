@@ -1,5 +1,10 @@
 from __future__ import division
 
+
+class IncompatibleUnitsError(Exception):
+    pass
+
+
 ### physical entities
 class Length(object):
     base_unit = 'meter'
@@ -42,7 +47,7 @@ class Quantity(object):
             # TODO different units
             if self.base_class != other.base_class:
                 print self.base_class, other.base_class
-                raise Exception('Multiplication of different physical entities is not yet implemented.')
+                raise IncompatibleUnitsError('Multiplication of different physical entities is not yet implemented.')
             # multiply in base units
             result.value = (self.value * self.coeff) * (other.value * other.coeff)
 
@@ -58,7 +63,7 @@ class Quantity(object):
         # number or other Quantity
         if self.base_class != other.base_class:
             print self.base_class, other.base_class
-            raise Exception('You cannot add different physical entities, i.e. time + mass = ?')
+            raise IncompatibleUnitsError('You cannot add different physical entities, i.e. time + mass = ?')
 
         result = Quantity(self.base_class)
         result.base_unit = self.base_unit
@@ -72,12 +77,12 @@ class Quantity(object):
 
     def __eq__(self, other):
         if self.base_unit != other.base_unit:
-            raise Exception('Cannot compare different physical entities: ' + ' '.join([self.base_unit, other.base_unit]))
+            raise IncompatibleUnitsError('Cannot compare different physical entities: ' + ' '.join([self.base_unit, other.base_unit]))
         return self.value * self.coeff == other.value * other.coeff
 
     def __ne__(self, other):
         if self.base_unit != other.base_unit:
-            raise Exception('Cannot compare different physical entities: ' + ' '.join([self.base_unit, other.base_unit]))
+            raise IncompatibleUnitsError('Cannot compare different physical entities: ' + ' '.join([self.base_unit, other.base_unit]))
         return self.value * self.coeff != other.value * other.coeff
 
     def __str__(self):
@@ -85,10 +90,17 @@ class Quantity(object):
 
     def to(self, other):
         if self.base_class != other.base_class:
-            raise Exception('Cannot convert between different physical entities.')
+            raise IncompatibleUnitsError('Cannot convert between different physical entities.')
         self.unit = other.unit
         self.value = self.value * self.coeff / other.coeff
         self.coeff = other.coeff
+
+    def __div__(self, other):
+        raise NotImplementedError
+
+    def __truediv__(self, other):  # due to from __future__ import division
+        raise NotImplementedError
+
 
 ### Unit definitions
 
